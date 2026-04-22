@@ -1,0 +1,270 @@
+You’re close, but your current steps and code have **multiple structural and syntax issues**. I’ll fix everything properly so your experiment actually works in **Jenkins + Maven + Selenium (Windows CMD only)**.
+
+---
+
+# 🧪 ✅ Experiment 5 — Correct Steps
+
+## 🎯 Aim
+
+To setup and run Selenium tests in Jenkins using Maven.
+
+---
+
+# 🔧 STEP 1: Create Maven Project (Correct command)
+
+Run in **CMD (not WSL):**
+
+```bat
+mvn archetype:generate -DgroupId=com.example -DartifactId=selenium-addition -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+```
+
+👉 Why NOT webapp archetype?
+Because:
+
+* You are testing UI via Selenium, not deploying WAR to server
+* Quickstart is cleaner for test execution
+
+---
+
+# 📁 STEP 2: Project Structure
+
+After creation:
+
+```
+selenium-addition/
+ ├── src/
+ │   ├── main/
+ │   │   └── java/
+ │   └── test/
+ │       └── java/com/example/
+ │           └── AdditionTest.java
+ ├── pom.xml
+```
+
+---
+
+# 🌐 STEP 3: Create HTML Page
+
+Create file:
+
+```
+src/main/resources/index.html
+```
+
+### ✅ Correct HTML code:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Addition</title>
+    <script>
+        function addNumbers() {
+            var a = parseInt(document.getElementById("num1").value);
+            var b = parseInt(document.getElementById("num2").value);
+            document.getElementById("result").innerText = "Sum is: " + (a + b);
+        }
+    </script>
+</head>
+<body>
+    <h2>Add Two Numbers</h2>
+    <input type="text" id="num1" placeholder="Enter First Number">
+    <input type="text" id="num2" placeholder="Enter Second Number">
+    <button onclick="addNumbers()">Add</button>
+    <p id="result"></p>
+</body>
+</html>
+```
+
+---
+
+# 📦 STEP 4: Update `pom.xml` (VERY IMPORTANT)
+
+Add dependencies:
+
+```xml
+<dependencies>
+
+    <!-- Selenium -->
+    <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>4.21.0</version>
+    </dependency>
+
+    <!-- WebDriver Manager -->
+    <dependency>
+        <groupId>io.github.bonigarcia</groupId>
+        <artifactId>webdrivermanager</artifactId>
+        <version>5.8.0</version>
+    </dependency>
+
+    <!-- JUnit 5 -->
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.10.2</version>
+        <scope>test</scope>
+    </dependency>
+
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+        </plugin>
+    </plugins>
+</build>
+```
+
+---
+
+# 🧪 STEP 5: Correct Selenium Test Code
+
+File:
+
+```
+src/test/java/com/example/AdditionTest.java
+```
+
+### ❌ Your mistakes:
+
+* `driver new ChromeDriver();` → syntax error
+* `By.id(num1)` → should be string `"num1"`
+* `sendKeys(5)` → must be `"5"`
+* Wrong file path format
+
+---
+
+### ✅ Correct code:
+
+```java
+package com.example;
+
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class AdditionTest {
+
+    @Test
+    public void testAddition() throws InterruptedException {
+
+        WebDriverManager.chromedriver().setup();
+        WebDriver driver = new ChromeDriver();
+
+        File file = new File("src/main/resources/index.html");
+        String url = file.getAbsolutePath();
+        driver.get("file:///" + url);
+
+        WebElement num1 = driver.findElement(By.id("num1"));
+        WebElement num2 = driver.findElement(By.id("num2"));
+
+        num1.sendKeys("10");
+        num2.sendKeys("20");
+
+        driver.findElement(By.tagName("button")).click();
+
+        Thread.sleep(2000);
+
+        WebElement result = driver.findElement(By.id("result"));
+        assertEquals("Sum is: 30", result.getText());
+
+        driver.quit();
+    }
+}
+```
+
+---
+
+# ⚙️ STEP 6: Run Test (CMD ONLY)
+
+```bat
+mvn clean test
+```
+
+---
+
+# 📊 STEP 7: Output & Reports
+
+Reports generated at:
+
+```
+target\surefire-reports
+```
+
+You’ll see:
+
+* `.txt` logs
+* `.xml` reports
+
+---
+
+# 🤖 STEP 8: Run in Jenkins
+
+### In Jenkins:
+
+1. Create **Freestyle Project**
+2. Source Code → Git (or local path)
+3. Build Step → “Invoke top-level Maven targets”
+4. Goals:
+
+```bat
+clean test
+```
+
+---
+
+# 🔥 FINAL RESULT
+
+You should see:
+
+* Chrome opens
+* Inputs values
+* Clicks button
+* Displays:
+
+```
+Sum is: 30
+```
+
+---
+
+# ⚠️ Brutal Reality (Important)
+
+Your original approach had these issues:
+
+* ❌ Wrong Maven archetype usage
+* ❌ Broken Selenium syntax
+* ❌ Incorrect file path (Windows path won't work in browser)
+* ❌ Missing assertions (test wasn’t actually testing anything)
+
+---
+
+# 🧾 Final Clean Steps Summary
+
+1. Create Maven project
+2. Add HTML file
+3. Add Selenium + JUnit dependencies
+4. Write correct test case
+5. Run `mvn clean test`
+6. Configure Jenkins
+7. Check reports
+
+---
+
+If you want next level:
+I can:
+
+* Convert this into **headless execution (important for Jenkins servers)**
+* Or integrate with **Jenkins pipeline (Jenkinsfile)** instead of freestyle job

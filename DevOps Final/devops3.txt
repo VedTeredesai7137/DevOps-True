@@ -1,0 +1,114 @@
+🔹 STEP 1: Verify prerequisites
+
+Open Command Prompt (CMD) and check:
+
+java -version
+mvn -version
+
+👉 If Jenkins is installed:
+
+Open browser → http://localhost:8080
+Login using admin credentials
+
+✔ If anything missing:
+
+Install Java (JDK 11 or 17)
+Install Maven
+Ensure both are added to Environment Variables (PATH)
+🔹 STEP 2: Create Maven Project
+mvn archetype:generate -DgroupId=com.example -DartifactId=hello-world -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+👉 This creates:
+
+hello-world/
+ ├── pom.xml
+ └── src/
+🔹 STEP 3: Navigate into project
+cd hello-world
+🔹 STEP 4: Build & Run locally (IMPORTANT)
+mvn compile
+mvn package
+mvn install
+
+Now run:
+
+java -cp target\classes com.example.App
+
+✔ Output should print:
+
+Hello World!
+🔹 STEP 5: Push project to GitHub
+
+Initialize Git:
+
+git init
+git add .
+git commit -m "Initial commit"
+
+Connect to repo:
+
+git remote add origin <your-repo-url>
+git branch -M main
+git push -u origin main
+🔹 STEP 6: Setup Jenkins Plugins
+
+Go to:
+
+Manage Jenkins → Manage Plugins
+
+Install:
+
+Maven Integration Plugin
+Git Plugin
+
+Restart Jenkins if required.
+
+🔹 STEP 7: Configure Tools in Jenkins
+
+Go to:
+
+Manage Jenkins → Global Tool Configuration
+Configure JDK:
+Add JDK → give name (e.g., JDK17)
+Set path OR auto-install
+Configure Maven:
+Name: Maven3
+Tick “Install automatically”
+Select version
+
+Save.
+
+🔹 STEP 8: Create Jenkins Job
+Click New Item
+Enter name (e.g., HelloWorldJob)
+Select Freestyle Project
+Click OK
+🔹 STEP 9: Connect Git Repository
+
+In job config:
+
+Go to Source Code Management
+Select Git
+Paste repo URL
+🔹 STEP 10: Configure Build Step
+
+Scroll to Build
+
+Click:
+👉 “Add build step” → “Invoke top-level Maven targets”
+
+Fill:
+
+Maven Version → Maven3
+Goals:
+clean compile exec:java -Dexec.mainClass="com.example.App"
+🔹 STEP 11: Save & Build
+Click Save
+Click Build Now
+🔹 STEP 12: Check Output
+Click build number → Console Output
+
+✔ You should see:
+
+Hello World!
+BUILD SUCCESS

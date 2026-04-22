@@ -1,0 +1,70 @@
+# ================================================================
+# STEPS TO INSTALL NAGIOS MONITORING TOOL ON AWS (AMAZON LINUX 2)
+# ================================================================
+
+# STEP 1: Launch EC2 Instance (Manual Action in AWS Console)
+# Name: Ved-Nagios-Server | AMI: Amazon Linux 2 | Type: t2.micro
+# Security Group: Allow SSH (22) and HTTP (80) from 0.0.0.0/0
+
+# STEP 2: FIX PEM + SSH (From WSL/Linux Terminal)
+cd /mnt/c/Users/USER/Downloads
+cp Ved-devops-12.pem ~/
+cd ~
+chmod 400 Ved-devops-12.pem
+ssh -i Ved-devops-12.pem ec2-user@<Your-Public-IP>
+
+# STEP 3: SYSTEM UPDATE
+sudo yum update -y
+
+# STEP 4: INSTALL DEPENDENCIES
+sudo yum install -y httpd php gcc glibc glibc-common wget unzip make autoconf openssl-devel net-snmp httpd-tools
+
+# STEP 5: CREATE NAGIOS USER AND GROUPS
+sudo useradd nagios
+sudo groupadd nagcmd
+sudo usermod -a -G nagcmd nagios
+sudo usermod -a -G nagcmd apache
+
+# STEP 6: DOWNLOAD NAGIOS CORE
+cd /tmp
+wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.6.tar.gz
+tar -xvf nagios-4.4.6.tar.gz
+cd nagios-4.4.6
+
+# STEP 7: COMPILE & INSTALL NAGIOS
+./configure --with-command-group=nagcmd
+make all
+sudo make install
+sudo make install-init
+sudo make install-commandmode
+sudo make install-config
+sudo make install-webconf
+
+# STEP 8: CREATE WEB INTERFACE LOGIN USER (Set password when prompted)
+sudo htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+
+# STEP 9: INSTALL NAGIOS PLUGINS
+cd /tmp
+wget https://nagios-plugins.org/download/nagios-plugins-2.3.3.tar.gz
+tar -xvf nagios-plugins-2.3.3.tar.gz
+cd nagios-plugins-2.3.3
+./configure --with-nagios-user=nagios --with-nagios-group=nagios
+make
+sudo make install
+
+# STEP 10: START AND ENABLE SERVICES
+sudo systemctl start httpd
+sudo systemctl enable httpd
+sudo systemctl start nagios
+sudo systemctl enable nagios
+
+# STEP 11: ACCESS WEB INTERFACE
+# URL: http://<Your-Public-IP>/nagios
+# Username: nagiosadmin
+# Password: (The one you set in Step 8)
+# Note: If it fails to load, run: sudo systemctl restart httpd
+
+# STEP 12: FINAL CLEANUP (Local Terminal)
+cd ~
+rm Ved-devops-12.pem
+ls

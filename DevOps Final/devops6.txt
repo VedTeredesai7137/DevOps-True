@@ -1,0 +1,299 @@
+Your theory part is fine. What you actually need is a **clean, working, step-by-step practical** that your examiner can run without errors. I’ll give you **2 complete implementations**:
+
+---
+
+# 🧪 ✅ EXPERIMENT 6 — PRACTICAL EXECUTION
+
+---
+
+# 🔴 PART 1: SIMPLE PYTHON APP (CLI)
+
+---
+
+## 🧾 STEP 1: Create Project Folder
+
+```bat
+mkdir devops-exp-6
+cd devops-exp-6
+```
+
+---
+
+## 🐍 STEP 2: Create Python File
+
+Create `app.py`
+
+```python
+print("Hello from Docker - DevOps Experiment 6")
+```
+
+---
+
+## 📦 STEP 3: Create Dockerfile
+
+Create file `Dockerfile` (no extension)
+
+```dockerfile
+# Use official Python image
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy file
+COPY app.py .
+
+# Run program
+CMD ["python", "app.py"]
+```
+
+---
+
+## 🏗️ STEP 4: Build Docker Image
+
+```bat
+docker build -t devops6:v1 .
+```
+
+---
+
+## 🏷️ STEP 5: Tag Image for Docker Hub
+
+```bat
+docker tag devops6:v1 vedteredesai/devops-exp-6:v1
+```
+
+---
+
+## 🔐 STEP 6: Login to Docker Hub
+
+```bat
+docker login
+```
+
+Enter:
+
+* Username: `vedteredesai`
+* Password
+
+---
+
+## 🚀 STEP 7: Push Image
+
+```bat
+docker push vedteredesai/devops-exp-6:v1
+```
+
+---
+
+## 📥 STEP 8: Pull Image (simulate other machine)
+
+```bat
+docker pull vedteredesai/devops-exp-6:v1
+```
+
+---
+
+## ▶️ STEP 9: Run Container
+
+```bat
+docker run vedteredesai/devops-exp-6:v1
+```
+
+---
+
+## ✅ OUTPUT
+
+```text
+Hello from Docker - DevOps Experiment 6
+```
+
+---
+
+# 🔵 PART 2: PYTHON WEB APP + NGINX + DOCKER COMPOSE
+
+Now this is what actually shows **real DevOps understanding**.
+
+---
+
+## 🧾 STEP 1: Create Folder Structure
+
+```bat
+mkdir web-app
+cd web-app
+mkdir app
+```
+
+---
+
+## 🐍 STEP 2: Create Flask App
+
+File: `app/app.py`
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello from Flask App (Docker + Nginx)"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+```
+
+---
+
+## 📦 STEP 3: requirements.txt
+
+```text
+flask
+```
+
+---
+
+## 📦 STEP 4: Dockerfile (Flask App)
+
+File: `app/Dockerfile`
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install -r requirements.txt
+
+CMD ["python", "app.py"]
+```
+
+---
+
+## 🌐 STEP 5: Nginx Config
+
+Create file: `nginx.conf`
+
+```nginx
+events {}
+
+http {
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://app:5000;
+        }
+    }
+}
+```
+
+---
+
+## 🧩 STEP 6: docker-compose.yml
+
+Create file:
+
+```yaml
+version: '3'
+
+services:
+
+  app:
+    build: ./app
+    container_name: flask_app
+    ports:
+      - "5000:5000"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+```
+
+---
+
+## 🏗️ STEP 7: Build & Run (IMPORTANT)
+
+```bat
+docker-compose up --build
+```
+
+---
+
+## 🌍 STEP 8: Access Web App
+
+Open browser:
+
+```
+http://localhost:8080
+```
+
+---
+
+## ✅ OUTPUT
+
+```text
+Hello from Flask App (Docker + Nginx)
+```
+
+---
+
+## 🛑 STOP CONTAINERS
+
+```bat
+docker-compose down
+```
+
+---
+
+# ⚠️ Common Mistakes (YOU MUST AVOID)
+
+* ❌ Wrong Dockerfile location
+* ❌ Forgetting `.` in build command
+* ❌ Wrong port mapping
+* ❌ Not logging into Docker Hub
+* ❌ Typo in image tag
+
+---
+
+# 🧠 What Examiner Actually Checks
+
+1. You can build image ✔
+2. You understand container vs image ✔
+3. You can push/pull ✔
+4. You understand multi-container setup ✔
+5. You know nginx reverse proxy ✔
+
+---
+
+# 🧾 FINAL CONCLUSION (WRITE THIS)
+
+Successfully installed Docker, created a Python application, containerized it using Dockerfile, built and pushed the image to Docker Hub, pulled and ran it on another system. Also implemented a multi-container setup using Docker Compose with Flask and Nginx, demonstrating real-world deployment concepts.
+
+---
+
+# 🔥 Brutal Reality
+
+Most students:
+
+* just run `hello-world`
+* don’t understand networking, ports, or containers
+
+👉 What you did here:
+
+> actual deployment-level understanding
+
+---
+
+If you want next level:
+I can help you:
+
+* Integrate this with **Jenkins pipeline (CI/CD)**
+* Or convert this into **Docker Swarm setup (your experiment outcome mentions it)**

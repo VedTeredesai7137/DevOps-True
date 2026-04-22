@@ -1,0 +1,278 @@
+Good—you caught the missing piece. Your **pipeline was fixed**, but your **pom.xml also needs to be complete and correct for a WAR project with JDK 21**. I’ll rewrite everything cleanly and include a **fully correct pom.xml based on your image + required fixes**.
+
+---
+
+# ✅ 🔥 FINAL CLEAN SETUP (WITH CORRECT pom.xml)
+
+---
+
+# 🔹 STEP 1: Create Maven Web App
+
+```cmd
+mvn archetype:generate -DgroupId=com.example -DartifactId=hello-world -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+```
+
+---
+
+# 🔹 STEP 2: Go to Project Folder
+
+```cmd
+cd hello-world
+```
+
+---
+
+# 🔹 STEP 3: Build Locally (MANDATORY CHECK)
+
+```cmd
+mvn clean package
+```
+
+✔ Output:
+
+```
+target/hello-world.war
+```
+
+---
+
+# 🔹 STEP 4: ✅ COMPLETE CORRECT pom.xml
+
+Your image had a **basic structure**, but it’s missing:
+
+* JDK 21 config
+* WAR plugin support
+* modern compiler config
+
+👉 Use this **FINAL corrected pom.xml**:
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>hello-world</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>hello-world Maven Webapp</name>
+    <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <!-- JUnit for testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>hello-world</finalName>
+
+        <plugins>
+
+            <!-- Compiler Plugin for JDK 21 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
+            </plugin>
+
+            <!-- WAR Plugin (important for Tomcat deployment) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
+```
+
+---
+
+# 🔴 WHY THIS FIX MATTERS
+
+Without this:
+
+* ❌ JDK mismatch errors
+* ❌ WAR build may fail
+* ❌ Jenkins build breaks
+
+---
+
+# 🔹 STEP 5: Push to GitHub
+
+```cmd
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin <your-repo-url>
+git push -u origin main
+```
+
+---
+
+# 🔹 STEP 6: Configure Tomcat (XAMPP)
+
+### Change Port → 8081
+
+### Edit `tomcat-users.xml`
+
+```xml
+<role rolename="manager-script"/>
+<user username="tomcat" password="tomcat123" roles="manager-script"/>
+```
+
+---
+
+# 🔹 STEP 7: Jenkins Setup
+
+### Install Plugins:
+
+* Git Plugin
+* Maven Integration Plugin
+* Deploy to container Plugin
+
+---
+
+### Configure Tools:
+
+* JDK → `jdk-21`
+* Maven → `maven3`
+
+---
+
+# 🔹 STEP 8: Add Credentials
+
+* Username: `tomcat`
+* Password: `tomcat123`
+* ID: `tomcat-creds`
+
+---
+
+# 🔹 STEP 9: Create Pipeline Job
+
+* New Item → Pipeline
+* Name: `HelloWorldPipeline`
+
+---
+
+# 🔹 STEP 10: ✅ FINAL CORRECT Jenkinsfile
+
+```groovy
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3'
+        jdk 'jdk-21'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                bat 'mvn clean package'
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                deploy adapters: [
+                    tomcat9(
+                        credentialsId: 'tomcat-creds',
+                        path: '/my-webapp',
+                        url: 'http://localhost:8081'
+                    )
+                ],
+                contextPath: '/my-webapp',
+                war: 'target/hello-world.war'
+            }
+        }
+    }
+}
+```
+
+---
+
+# 🔹 STEP 11: Configure SCM
+
+* Pipeline → Pipeline script from SCM
+* Git URL → your repo
+* Branch → `main`
+* Script path → `Jenkinsfile`
+
+---
+
+# 🔹 STEP 12: Build
+
+👉 Click **Build Now**
+
+---
+
+# 🔹 STEP 13: OUTPUT
+
+Open:
+
+```
+http://localhost:8081/my-webapp/
+```
+
+✔ App should load
+
+---
+
+# ⚠️ FINAL COMMON ERRORS (VERY IMPORTANT)
+
+* WAR name mismatch (`hello-world.war`)
+* Jenkins tool names mismatch (`jdk-21`, `maven3`)
+* Tomcat not running
+* Wrong port (8080 vs 8081)
+* Credentials mismatch
+
+---
+
+# 🧾 FINAL CONCLUSION (WRITE THIS)
+
+> A Maven-based web application was successfully created and packaged into a WAR file. Jenkins pipeline was configured to automate code checkout, build, and deployment to Tomcat server. Continuous integration and deployment were successfully implemented.
+
+---
+
+# 🔥 Brutal truth
+
+This setup is:
+👉 **Academic-level CI/CD**
+
+Real-world:
+
+* Uses Docker instead of Tomcat manually
+* Uses Jenkins pipelines with testing + staging
+* Uses Kubernetes or cloud deploy
+
+---
+
+If you want next:
+I can upgrade this into:
+👉 Docker + Jenkins + CI/CD (industry-level project)

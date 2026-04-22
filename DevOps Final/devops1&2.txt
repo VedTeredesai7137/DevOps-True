@@ -1,0 +1,358 @@
+Your theory is fine, but for practical + viva you need **clean command understanding**, not just steps. I’ll give you **all important Git commands you listed**, with:
+
+* ✔ exact syntax
+* ✔ what it actually does (internally)
+* ✔ when to use (real scenarios)
+* ✔ dangerous parts (very important)
+
+All commands are **WSL-compatible (Linux-style terminal)**.
+
+---
+
+# 🧠 FIRST: How Git actually works (very important)
+
+Git has **3 main areas**:
+
+1. **Working Directory** → your files
+2. **Staging Area (Index)** → prepared changes
+3. **Repository (.git)** → committed history
+
+👉 Every command you use affects one of these
+
+---
+
+# 🔧 1. `git add`
+
+```bash
+git add .
+git add file.txt
+```
+
+### ✔ What it does:
+
+* Moves changes from **working directory → staging area**
+
+### 🧠 Meaning:
+
+> “Prepare these files for commit”
+
+### 🔥 Reality:
+
+* It does NOT save permanently
+* Just queues changes
+
+---
+
+# 🔄 2. `git restore`
+
+```bash
+git restore file.txt
+git restore --staged file.txt
+```
+
+### ✔ Uses:
+
+### A) Discard changes (working directory)
+
+```bash
+git restore file.txt
+```
+
+👉 Removes changes (like undo)
+
+---
+
+### B) Remove from staging
+
+```bash
+git restore --staged file.txt
+```
+
+👉 Unstage file
+
+---
+
+### ⚠️ Danger:
+
+* Can delete your changes permanently
+
+---
+
+# 💣 3. `git reset`
+
+```bash
+git reset file.txt
+git reset --soft HEAD~1
+git reset --hard HEAD~1
+```
+
+### ✔ Types:
+
+### A) Unstage file
+
+```bash
+git reset file.txt
+```
+
+---
+
+### B) Soft reset
+
+```bash
+git reset --soft HEAD~1
+```
+
+👉 Undo commit BUT keep changes
+
+---
+
+### C) Hard reset (VERY DANGEROUS)
+
+```bash
+git reset --hard HEAD~1
+```
+
+👉 Deletes:
+
+* commit
+* staged changes
+* working changes
+
+---
+
+# 💀 4. `git reset --hard .`
+
+```bash
+git reset --hard
+```
+
+👉 Resets EVERYTHING to last commit
+
+### ⚠️ Brutal truth:
+
+> This command can destroy your work permanently
+
+---
+
+# 🌿 5. Create new branch
+
+```bash
+git branch new-feature
+```
+
+### ✔ What it does:
+
+* Creates new branch
+* DOES NOT switch to it
+
+---
+
+# 🔀 6. Switch branch
+
+```bash
+git switch new-feature
+```
+
+OR (older way):
+
+```bash
+git checkout new-feature
+```
+
+---
+
+# ⚡ 7. Create + switch (best way)
+
+```bash
+git switch -c new-feature
+```
+
+👉 One command = create + move
+
+---
+
+# 🔁 8. Change branch
+
+```bash
+git switch main
+```
+
+👉 Moves you between branches
+
+---
+
+# 💾 9. `git commit`
+
+```bash
+git commit -m "Added login feature"
+```
+
+### ✔ What it does:
+
+* Saves snapshot in Git history
+
+### 🧠 Meaning:
+
+> “This is a stable version”
+
+---
+
+# 🚀 10. `git push`
+
+```bash
+git push origin main
+```
+
+### ✔ What it does:
+
+* Sends commits → GitHub
+
+---
+
+### First time push:
+
+```bash
+git push -u origin main
+```
+
+👉 Sets upstream (so future pushes are simpler)
+
+---
+
+# 🔄 11. `git pull`
+
+```bash
+git pull origin main
+```
+
+### ✔ What it does:
+
+* Fetch + merge changes from GitHub
+
+---
+
+# 🔁 12. `git rebase`
+
+```bash
+git rebase main
+```
+
+### ✔ What it does:
+
+* Re-applies your commits on top of another branch
+
+---
+
+### 🧠 Difference from merge:
+
+| Merge               | Rebase              |
+| ------------------- | ------------------- |
+| Keeps history messy | Keeps history clean |
+
+---
+
+### ⚠️ Danger:
+
+* Don’t rebase shared branches
+
+---
+
+# 📦 13. `git stash`
+
+```bash
+git stash
+git stash pop
+git stash list
+```
+
+### ✔ What it does:
+
+* Temporarily saves changes
+
+---
+
+### Example:
+
+```bash
+git stash
+git switch main
+```
+
+👉 Your work is saved but removed temporarily
+
+---
+
+### Restore:
+
+```bash
+git stash pop
+```
+
+---
+
+# 🔥 REAL WORKFLOW (EXAM IMPORTANT)
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+
+git branch -M main
+git remote add origin <repo_url>
+git push -u origin main
+```
+
+---
+
+# 🧠 DAILY WORKFLOW
+
+```bash
+git pull
+git add .
+git commit -m "update"
+git push
+```
+
+---
+
+# ⚔️ ADVANCED FLOW (BRANCHING)
+
+```bash
+git switch -c feature-login
+git add .
+git commit -m "login feature"
+git push origin feature-login
+```
+
+---
+
+# 💀 MOST COMMON MISTAKES
+
+### ❌ Using `git reset --hard` blindly
+
+### ❌ Not pulling before push
+
+### ❌ Working directly on main branch
+
+### ❌ Forgetting staging area
+
+---
+
+# 🧾 FINAL CONCLUSION (write this)
+
+> Successfully performed version control operations using Git including staging, committing, branching, merging, and synchronization with GitHub repository. Learned to manage code efficiently and collaborate using distributed version control system.
+
+---
+
+# 🔥 ONE-LINE TRUTH
+
+> Git is not about commands…
+> it’s about controlling time (your code history).
+
+---
+
+If you want next level:
+I can give you:
+
+* **Interview-level Git questions**
+* OR **real-world Git mistakes developers make (very useful)**
