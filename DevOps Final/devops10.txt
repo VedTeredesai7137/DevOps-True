@@ -1,0 +1,127 @@
+[cite_start]Here is the complete, step-by-step guide to setting up your CI/CD pipeline using Maven, Jenkins, GitHub, and SonarQube for Static Application Security Testing (SAST)[cite: 3]. This guide is structured based on your provided steps, incorporating the necessary commands and the final update process.
+
+### **Step 1: Start SonarQube and Generate a Token**
+
+[cite_start]First, you need to have your SonarQube server running and generate an authentication token so Jenkins can communicate with it[cite: 74, 93].
+
+1.  **Start SonarQube:** Open your terminal and start the server using your Linux script. [cite_start]*(Note: If you are on Windows, you would run `StartSonar.bat` in the `windows-x86-64` folder [cite: 43, 44]).*
+    ```bash
+    cd sonarqube-*/bin/linux-x86-64
+    ./sonar.sh start
+    ```
+2.  [cite_start]**Login:** Open your browser and navigate to `http://localhost:9000` (default credentials are admin/admin)[cite: 69, 71].
+3.  **Generate Token:** Navigate to **Administration > Security > Users > Tokens**. [cite_start]Generate a new token, give it a name, and copy it[cite: 92]. Keep this token handy.
+
+---
+
+### **Step 2: Configure Jenkins with SonarQube**
+
+[cite_start]Next, configure Jenkins to use the SonarQube server and the token you just created[cite: 95].
+
+1.  [cite_start]In Jenkins, go to **Manage Jenkins > Configure System** (or **System Configuration** depending on your version)[cite: 78, 79].
+2.  [cite_start]Scroll down to the **SonarQube servers** section and click **Add SonarQube**[cite: 97].
+3.  Fill in the details:
+    * **Name:** `sonarqube` (This exact name is referenced in your pipeline script).
+    * [cite_start]**Server URL:** `http://localhost:9000`[cite: 97].
+    * [cite_start]**Server authentication token:** Click **Add**, select **Secret text**, paste your SonarQube token into the Secret field, and save it[cite: 97]. Select this credential from the dropdown.
+
+---
+
+### **Step 3: Create the Maven Project and Push to GitHub**
+
+Generate your sample Java application and push it to your repository. 
+
+1.  **Generate Project:** Run the following Maven command in your terminal to create the project scaffold:
+    ```bash
+    mvn archetype:generate -DgroupId=com.demo -DartifactId=sonar-demo -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+    ```
+2.  **Push to GitHub:** Navigate into the newly created `sonar-demo` directory and push it to your repository:
+    ```bash
+    cd sonar-demo
+    git init
+    git add .
+    git commit -m "Initial commit of Maven project"
+    git branch -M main
+    git remote add origin https://github.com/VedTeredesai7137/devops-10.git
+    git push -u origin main
+    ```
+
+---
+
+### **Step 4: Create and Run the Jenkins Pipeline**
+
+Set up the Jenkins pipeline using the script you provided to automate the build, test, and analysis phases.
+
+1.  In Jenkins, click **New Item**, name it (e.g., `devops-10-pipeline`), select **Pipeline**, and click **OK**.
+2.  Scroll down to the **Pipeline** section and paste your script. *(Note: The script below uses `bat` for Windows execution. If your Jenkins node is running on Linux, change `bat` to `sh`)*:
+
+    ```groovy
+    pipeline {
+        agent any
+
+        tools {
+            maven 'Maven-3.9.12'
+        }
+
+        stages {
+            stage('Checkout Code') {
+                steps {
+                    git branch: 'main', url: 'https://github.com/VedTeredesai7137/devops-10.git'
+                }
+            }
+
+            stage('Build') {
+                steps {
+                    bat 'mvn clean compile'
+                }
+            }
+
+            stage('Test') {
+                steps {
+                    bat 'mvn test'
+                }
+            }
+
+            stage('SonarQube Analysis') {
+                steps {
+                    withSonarQubeEnv('sonarqube') {
+                        bat """
+                        mvn sonar:sonar ^
+                        -Dsonar.projectKey=devops-10 ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.login=squ_25a57563d9a0bbd10abd7a3dbe618e50984884d8
+                        """
+                    }
+                }
+            }
+        }
+    }
+    ```
+3.  Save the pipeline and click **Build Now**. Wait for the build to succeed. [cite_start]You can check the SonarQube dashboard (`http://localhost:9000`) to see the initial project overview and metrics like lines of code[cite: 154, 155].
+
+---
+
+### **Step 5: Edit, Push, and Verify the Update**
+
+To prove continuous integration works, modify your code, push the changes, and trigger a new build to see SonarQube update dynamically.
+
+1.  **Edit Code:** Open `src/main/java/com/demo/App.java` in your project and add a new line of code. [cite_start]To test SonarQube's code smell detection[cite: 2], add an unused variable or a generic `System.out.println`:
+    ```java
+    package com.demo;
+
+    public class App {
+        public static void main(String[] args) {
+            System.out.println("Hello World!");
+            System.out.println("Testing CI/CD Pipeline Update"); // New line
+            int unusedVariable = 42; // This should trigger a code smell in SonarQube
+        }
+    }
+    ```
+2.  **Push Changes:**
+    ```bash
+    git add src/main/java/com/demo/App.java
+    git commit -m "Added test print statement and code smell"
+    git push
+    ```
+3.  **Trigger Jenkins Build:** Go back to your pipeline in Jenkins and click **Build Now** again.
+4.  **Verify in SonarQube:** Once the Jenkins build completes, refresh your project page in SonarQube (`http://localhost:9000`). [cite_start]You will see the "New Code" tab updated with the recent changes, and SonarQube will likely flag `unusedVariable` as a new code smell, proving the pipeline successfully analyzed the latest push[cite: 15, 157].

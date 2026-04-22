@@ -1,0 +1,97 @@
+Here is the complete, step-by-step guide to creating your S3-triggered Lambda function, detailed exactly as outlined in your document. I've broken this down into clear phases so you won't miss any settings or configurations.
+
+### Phase 1: Create the Amazon S3 Bucket
+First, you need to create the storage container (bucket) that will trigger your code.
+
+1. [cite_start]Open the Amazon S3 console[cite: 51].
+2. [cite_start]Choose **Create bucket**[cite: 52].
+3. Under the **General configuration** section:
+    * [cite_start]**Bucket name:** Enter a unique name for your bucket (e.g., `ved-s3-lambda-trigger-bucket` as seen in the guide's examples)[cite: 54, 66]. 
+    * [cite_start]**AWS Region:** Choose a Region, such as `US West (N. California) us-west-1`[cite: 55]. [cite_start]**Crucial Note:** Remember this region, as you *must* create your Lambda function in the exact same Region later[cite: 55].
+4. **Settings to leave as Default:** The document does not specify changing any advanced settings. Therefore, you should leave the following sections exactly as they are:
+    * [cite_start]**Block Public Access settings for this bucket:** Leave the default ticks on to ensure your bucket remains private[cite: 58].
+    * [cite_start]**Tags:** Leave optional tags blank[cite: 60].
+    * [cite_start]**Default encryption:** Leave the default encryption settings[cite: 60].
+    * [cite_start]**Advanced settings:** Leave as default[cite: 61].
+5. [cite_start]Scroll to the bottom and choose **Create bucket**[cite: 59].
+
+### Phase 2: Upload an Initial Sample Object
+Before creating the function, place a sample file in the bucket.
+
+1. [cite_start]On the Buckets page, click the name of the bucket you just created[cite: 154].
+2. [cite_start]Go to the **Objects** tab and choose **Upload**[cite: 155].
+3. [cite_start]Drag and drop a test file (like a `.jpg` or simple script) from your computer onto the Upload page[cite: 156].
+4. [cite_start]Choose **Upload** at the bottom of the screen[cite: 161].
+
+### Phase 3: Create the Lambda Function using a Blueprint
+AWS provides templates (blueprints) that already have the necessary permissions and base code for S3 triggers configured.
+
+1. [cite_start]Open the **Functions** page on the AWS Lambda console[cite: 166].
+2. [cite_start]Choose **Create function**[cite: 167].
+3. [cite_start]At the top of the creation page, select the **Use a blueprint** option[cite: 168].
+4. [cite_start]Under the Blueprints section, type `s3` into the search box[cite: 169].
+5. [cite_start]From the filtered results, select the Python blueprint named **`s3-get-object-python`**[cite: 171]. 
+6. [cite_start]Choose **Configure**[cite: 171].
+7. Under the **Basic information** section:
+    * [cite_start]**Function name:** Enter `my-s3-function`[cite: 174].
+    * [cite_start]**Execution role:** Select **Create a new role from AWS policy templates**[cite: 175].
+    * [cite_start]**Role name:** Enter `my-s3-function-role`[cite: 175]. [cite_start]*(This role automatically grants CloudWatch log permissions, similar to the `ved-cloudwatch` IAM role shown in the document [cite: 109, 150])*
+8. Under the **S3 trigger** section:
+    * [cite_start]**Bucket:** Select the S3 bucket you created in Phase 1[cite: 178].
+    * Keep the default event type to trigger on all object creations. [cite_start]*Note: The console will automatically modify your resource-based policy to allow S3 to invoke this function[cite: 181].*
+9. [cite_start]Choose **Create function** at the bottom[cite: 182].
+
+### Phase 4: Configure the Python Code
+[cite_start]To achieve the aim of logging "An image has been added"[cite: 2], you need to slightly modify the blueprint code. 
+
+1. [cite_start]On your Lambda function's page, scroll down to the **Code source** section[cite: 189].
+2. [cite_start]Replace the default blueprint code in `lambda_function.py` with the following code derived from the document's screenshots and core objective[cite: 2, 182, 255]:
+
+```python
+import json
+import urllib.parse
+import boto3
+
+print('Loading function')
+
+s3 = boto3.client('s3')
+
+def lambda_handler(event, context):
+    # Get the object from the event and show its content type
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    try:
+        response = s3.get_object(Bucket=bucket, Key=key)
+        print("CONTENT TYPE: " + response['ContentType'])
+        
+        # This is the specific log required by the experiment
+        print('An image has been added')
+        
+        return response['ContentType']
+    except Exception as e:
+        print(e)
+        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region.'.format(key, bucket))
+        raise e
+```
+3. Click **Deploy** to save your changes.
+
+### Phase 5: Test the Function Manually
+Before using live S3 uploads, test the logic inside the console.
+
+1. [cite_start]Under the **Code source** section, click the arrow next to the orange **Test** button and select **Configure test events** from the dropdown[cite: 189].
+2. In the window that appears:
+    * [cite_start]Choose **Create new test event**[cite: 193].
+    * [cite_start]**Event template:** Search for and choose **Amazon S3 Put (s3-put)**[cite: 194].
+    * [cite_start]**Event name:** Enter `mys3testevent`[cite: 195].
+3. [cite_start]Scroll down and choose **Create**[cite: 196].
+4. Click the orange **Test** button. Your function will run against the dummy data, and you should see an execution result appear.
+
+### Phase 6: Live Testing with the S3 Trigger and CloudWatch Logs
+Now, trigger the function for real and verify the monitoring logs.
+
+1. [cite_start]Go back to your Amazon S3 console and open your source bucket[cite: 202].
+2. [cite_start]Click **Upload** and upload a few image files (like `.jpg` or `.png`) to the bucket[cite: 203].
+3. [cite_start]Return to the Lambda console and open your function (`my-s3-function`)[cite: 209].
+4. [cite_start]Click on the **Monitor** tab, and then click **View logs in CloudWatch** (or navigate to CloudWatch > Log groups)[cite: 212, 242].
+5. Click on the most recent Log stream.
+6. Look through the event messages. [cite_start]You should see the exact string you coded: `"An image has been added"`[cite: 2, 255]. [cite_start]If you see this, your serverless environment is successfully built and monitored[cite: 4, 263].

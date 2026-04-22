@@ -1,0 +1,111 @@
+To complete this CI/CD task, you need to understand that you are building an automated "delivery route." Your files move from **GitHub (Source)** through **CodeBuild (Processing)** to **S3 (Storage/Hosting)**. 
+
+Here is the in-depth, step-by-step flow.
+
+---
+
+## Phase 1: Create the "Billboard" (Amazon S3)
+**Location:** AWS Console (S3)
+**Action:** Create the space where the website will live. At this stage, do **not** upload any files manually.
+
+1.  **Create Bucket:** Name it `ved-devops-8`.
+2.  **Permissions:** Uncheck **Block all public access**.
+3.  **Static Hosting:** Go to **Properties** > **Static website hosting** > **Enable**. 
+    * Set `index.html` as the index document.
+4.  **Bucket Policy:** Go to **Permissions** > **Bucket Policy** and paste the JSON below. This allows the internet to see your files once they arrive.
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::ved-devops-8/*"
+        }
+    ]
+}
+```
+
+---
+
+## Phase 2: Give the "Driver" a License (IAM Role)
+**Location:** AWS Console (IAM)
+**Action:** Create a set of permissions so CodeBuild can "enter" your S3 bucket to drop off files.
+
+1.  **Create Role:** Choose **AWS Service** and select **CodeBuild**.
+2.  **Add Policies:** Attach `AmazonS3FullAccess` and `AWSCodeBuildDeveloperAccess`.
+3.  **Name it:** Use `ved-devops-8` (to match your project).
+
+---
+
+## Phase 3: Prepare the "Source" (GitHub)
+**Location:** GitHub.com or your Local VS Code
+**Action:** This is the **only** place you will ever write or edit code. You must create two specific files here.
+
+
+
+### File 1: `index.html`
+This is your actual website content.
+```html
+<!DOCTYPE html>
+<html>
+<body>
+    <h1 style="color: blue;">AWS Pipeline - Ved Teredesai</h1>
+    <p>Deployment successful via CodeBuild.</p>
+</body>
+</html>
+```
+
+### File 2: `buildspec.yml`
+This is the **instruction manual** for AWS. It tells CodeBuild: "Find the index.html file and send it to S3."
+```yaml
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "Setting up environment..."
+  build:
+    commands:
+      - echo "Build started on `date`"
+artifacts:
+  files:
+    - index.html
+  discard-paths: yes
+```
+
+---
+
+## Phase 4: Build the "Bridge" (AWS CodeBuild)
+**Location:** AWS Console (CodeBuild)
+**Action:** Connect your GitHub repository to your S3 bucket.
+
+1.  **Project Name:** `ved-build-project`.
+2.  **Source:** Select **GitHub**. If it's your first time, click **Connect to GitHub** and authorize it. Select your repo `VedTeredesai7137/ved-devops-8`.
+3.  **Environment:** Use **Amazon Linux** and select the **Existing Role** you created in Phase 2.
+4.  **Artifacts (Crucial Step):** * **Type:** Amazon S3.
+    * **Bucket Name:** `ved-devops-8`.
+    * **Packaging:** None (this ensures the file goes in as `index.html`, not a `.zip` file).
+
+---
+
+## Phase 5: Run the Pipeline (The "Push")
+**Location:** AWS Console (CodeBuild)
+**Action:** Trigger the move.
+
+1.  Inside your CodeBuild project, click **Start Build**.
+2.  **Watch the Logs:** You will see CodeBuild "Pulling" the code from GitHub and "Uploading" it to S3.
+3.  **Check S3:** Once it says **Succeeded**, go to your S3 bucket. You will see that `index.html` has magically appeared there. You did not upload it; CodeBuild did.
+
+---
+
+## Phase 6: How to Update (The "Flow")
+When you want to change your website (e.g., change the text from "Blue" to "Red"), **DO NOT go to S3.**
+
+1.  **Edit File:** Open `index.html` in **GitHub**.
+2.  **Save/Commit:** Push the changes to the GitHub repository.
+3.  **Rebuild:** Go back to **CodeBuild** and click **Start Build** again.
+4.  CodeBuild will fetch the *new* version from GitHub and overwrite the *old* version in S3 automatically.
+
+---

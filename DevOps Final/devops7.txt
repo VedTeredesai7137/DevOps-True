@@ -1,0 +1,57 @@
+
+---
+
+## Step 1: Launch an EC2 Instance in AWS
+In this phase, you provision a virtual server (instance) in the AWS Cloud.
+
+1.  **Sign in** to the [AWS Management Console](https://console.aws.amazon.com/).
+2.  Navigate to the **EC2 Dashboard** by searching for "EC2" in the top search bar.
+3.  Click on the **Launch Instance** button.
+4.  **Configure Instance Details:**
+    * **Name:** Give your instance a name (e.g., `ved-app-exp-7`).
+    * **AMI:** Select **Amazon Linux 2023** (as seen in the terminal output).
+    * **Instance Type:** Select **t3.micro** (or `t2.micro` if you are on the Free Tier).
+5.  **Key Pair:** Under the Key pair section, click **Create new key pair**. 
+    * Name it (e.g., `ved-ec2-keypair`).
+    * Select **RSA** and **.pem** format.
+    * **Important:** Download and save this `.pem` file to your computer (usually the "Downloads" folder). You will not be able to download it again.
+6.  **Network Settings:** Ensure "Allow SSH traffic from Anywhere (0.0.0.0/0)" is checked so you can connect from your desktop.
+7.  Click **Launch Instance**.
+
+---
+
+## Step 2: Connect to the Instance via SSH
+Once the instance state shows **"Running"**, you can connect to it using the Windows Command Prompt (CMD).
+
+1.  **Open CMD:** Press `Win + R`, type `cmd`, and hit Enter.
+2.  **Navigate to your Key Folder:** Change the directory to where you saved your `.pem` file.
+    ```cmd
+    cd "Downloads"
+    ```
+3.  **Connect to the Instance:** Use the SSH command. Replace `your-key.pem` with your filename and the IP address with your instance's **Public IPv4 address**.
+    ```cmd
+    ssh -i ved-ec2-keypair.pem ec2-user@98.82.132.151
+    ```
+    * *Note: If prompted with "Are you sure you want to continue connecting?", type **yes**.*
+
+---
+
+## Step 3: Create and Edit a File in Linux
+Now that you are logged into the remote Linux terminal (indicated by the `[ec2-user@ip-... ~]$` prompt), perform the following actions:
+
+1.  **Create an empty file:**
+    ```bash
+    touch app.txt
+    ```
+2.  **Add data to the file:** Use the `cat` command with the append operator (`>>`).
+    ```bash
+    cat >> app.txt
+    ```
+3.  **Type your content:** After running the command above, the cursor will wait for input. Type your text:
+    > `ved teredesai aws`
+4.  **Save and Exit:** Press **`Ctrl + C`** to stop the input process and save the file.
+5.  **Verify the file exists:** List the files in your current directory to see `app.txt`.
+    ```bash
+    ls
+    ```
+

@@ -1,0 +1,336 @@
+Good — now you’re aligning properly with the **actual experiment requirement (EC2 + S3 using Terraform)**. I’ll do two things:
+
+1. **Fix your S3 code (it has region + structure issues)**
+2. **Rewrite COMPLETE experiment steps (EC2 + S3 + change + destroy)** — clean, correct, and exam-ready
+
+---
+
+# ❌ PROBLEM IN YOUR S3 CODE
+
+Your version has issues:
+
+* ❌ region = `us-west-2` (wrong for your setup)
+* ❌ missing dependency clarity (not wrong but sloppy)
+* ❌ bucket name must be **globally unique** (very important)
+
+---
+
+# ✅ CORRECT S3 TERRAFORM CODE
+
+Use this:
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+  required_version = ">= 0.14.9"
+}
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+# S3 Bucket
+resource "aws_s3_bucket" "ved_bucket" {
+  bucket = "ved-devops8-unique-bucket-12345"  # MUST be globally unique
+
+  tags = {
+    Name        = "ved-devops8-main-bucket"
+    Environment = "Dev"
+  }
+}
+
+# Versioning
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.ved_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# ACL (private)
+resource "aws_s3_bucket_acl" "acl" {
+  bucket = aws_s3_bucket.ved_bucket.id
+  acl    = "private"
+}
+```
+
+---
+
+# ⚠️ VERY IMPORTANT (S3)
+
+* Bucket name must be **unique globally**
+* If error:
+
+```text
+BucketAlreadyExists
+```
+
+👉 Just change name slightly
+
+---
+
+# ✅ COMPLETE EXPERIMENT (EC2 + S3)
+
+Now I’ll rewrite **everything properly from start to end**
+
+---
+
+# 🔹 STEP 1 — IAM USER
+
+On Amazon Web Services:
+
+* Create IAM user
+* Attach:
+
+  * `AmazonEC2FullAccess`
+  * `AmazonS3FullAccess`
+* Create access keys
+
+---
+
+# 🔹 STEP 2 — INSTALL TERRAFORM (WSL)
+
+```bash
+sudo apt update
+sudo apt install terraform -y
+```
+
+---
+
+# 🔹 STEP 3 — CONFIGURE AWS
+
+```bash
+aws configure
+```
+
+```text
+Access Key
+Secret Key
+Region: ap-south-1
+Output: json
+```
+
+---
+
+# 🔹 STEP 4 — CREATE PROJECT
+
+```bash
+mkdir terraform-lab
+cd terraform-lab
+touch main.tf
+nano main.tf
+```
+
+---
+
+# 🔹 STEP 5 — WRITE COMPLETE CODE (EC2 + S3)
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+  required_version = ">= 0.14.9"
+}
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+# KEY PAIR
+resource "aws_key_pair" "deployer" {
+  key_name   = "terraform-key"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
+# SECURITY GROUP
+resource "aws_security_group" "allow_ssh" {
+  name = "allow_ssh"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# EC2 INSTANCE
+resource "aws_instance" "app_server" {
+  ami           = "ami-03f4878755434977f"
+  instance_type = "t3.micro"
+
+  key_name               = aws_key_pair.deployer.key_name
+  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+
+  tags = {
+    Name = "Terraform-Server"
+  }
+}
+
+# S3 BUCKET
+resource "aws_s3_bucket" "ved_bucket" {
+  bucket = "ved-devops8-unique-bucket-12345"
+
+  tags = {
+    Name        = "ved-devops8-main-bucket"
+    Environment = "Dev"
+  }
+}
+
+# VERSIONING
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.ved_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# ACL
+resource "aws_s3_bucket_acl" "acl" {
+  bucket = aws_s3_bucket.ved_bucket.id
+  acl    = "private"
+}
+```
+
+---
+
+# 🔹 STEP 6 — INITIALIZE
+
+```bash
+terraform init
+```
+
+---
+
+# 🔹 STEP 7 — FORMAT & VALIDATE
+
+```bash
+terraform fmt
+terraform validate
+```
+
+---
+
+# 🔹 STEP 8 — PLAN
+
+```bash
+terraform plan
+```
+
+---
+
+# 🔹 STEP 9 — APPLY (CREATE INFRASTRUCTURE)
+
+```bash
+terraform apply
+```
+
+Type:
+
+```bash
+yes
+```
+
+---
+
+## ✅ OUTPUT EXPECTED
+
+```text
+Resources: 4+ added
+```
+
+👉 Creates:
+
+* EC2 instance
+* Key pair
+* Security group
+* S3 bucket
+
+---
+
+# 🔹 STEP 10 — CHANGE INFRASTRUCTURE
+
+## Example change:
+
+Open file:
+
+```bash
+nano main.tf
+```
+
+### Change EC2 AMI:
+
+```hcl
+ami = "ami-08d70e59c07c61a3a"
+```
+
+---
+
+### OR change S3 tag:
+
+```hcl
+Environment = "Production"
+```
+
+---
+
+Apply:
+
+```bash
+terraform apply
+```
+
+👉 Terraform will:
+
+* Replace EC2 (if AMI changed)
+* Update S3 (if tag changed)
+
+---
+
+# 🔹 STEP 11 — DESTROY INFRASTRUCTURE
+
+```bash
+terraform destroy
+```
+
+Type:
+
+```bash
+yes
+```
+
+---
+
+## ✅ OUTPUT
+
+```text
+Destroy complete! Resources: all destroyed
+```
+
+---
+
+# ✅ FINAL RESULT (WRITE IN PRACTICAL)
+
+* EC2 instance created using Terraform
+* S3 bucket created with versioning and ACL
+* Infrastructure modified successfully
+* Infrastructure destroyed successfully
+
