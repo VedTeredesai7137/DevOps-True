@@ -261,10 +261,42 @@ Your original approach had these issues:
 6. Configure Jenkins
 7. Check reports
 
----
 
-If you want next level:
-I can:
 
-* Convert this into **headless execution (important for Jenkins servers)**
-* Or integrate with **Jenkins pipeline (Jenkinsfile)** instead of freestyle job
+
+
+Detailed Jenkins Freestyle Setup (Step-by-Step)
+To ensure this runs perfectly in Jenkins on your local machine, follow these exact clicks:
+
+1. Create the Job
+Open Jenkins (localhost:8080).
+Click New Item -> Enter SeleniumAdditionTest -> Select Freestyle project -> Click OK.
+
+2. Source Code Management (SCM)
+If your code is on GitHub, select Git and paste the URL.
+If your code is only on your local folder: Select None. (You will need to ensure the Jenkins "Workspace" has your files, or point Jenkins to your local directory).
+
+3. Build Environment (Crucial for Selenium)
+Check: "Add timestamps to the Console Output" (helps in debugging).
+IMPORTANT: Since Jenkins runs as a "Service" on Windows, it might not have permission to "open" the Chrome window on your desktop.
+Fix: If Chrome doesn't appear, you might need to add options.addArguments("--headless"); to your Java code later.
+
+4. Build Steps
+
+Click Add build step -> Invoke top-level Maven targets.
+Maven Version: Select maven3 (or whatever name you gave it in Global Tool Configuration).
+Goals: Type exactly:
+
+Bash
+clean test
+5. Post-build Actions (To see your results)
+
+Click Add post-build action -> Publish JUnit test result report.
+Test report XMLs: Enter:
+
+**/target/surefire-reports/*.xml
+This allows Jenkins to show you pretty graphs of Pass/Fail tests.
+
+6. Save & Build
+Click Save.
+Click Build Now.
