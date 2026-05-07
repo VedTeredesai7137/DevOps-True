@@ -259,20 +259,8 @@ http://localhost:8081/my-webapp/
 > A Maven-based web application was successfully created and packaged into a WAR file. Jenkins pipeline was configured to automate code checkout, build, and deployment to Tomcat server. Continuous integration and deployment were successfully implemented.
 
 ---
-
-# 🔥 Brutal truth
-
-This setup is:
-👉 **Academic-level CI/CD**
-
-Real-world:
-
-* Uses Docker instead of Tomcat manually
-* Uses Jenkins pipelines with testing + staging
-* Uses Kubernetes or cloud deploy
-
----
-
-If you want next:
-I can upgrade this into:
-👉 Docker + Jenkins + CI/CD (industry-level project)
+Files to change and path of them
+File Name,Address (Path),Why change it?
+pom.xml,hello-world/pom.xml,To tell Maven to use JDK 21 and package as a WAR.
+Jenkinsfile,hello-world/Jenkinsfile,To define the automation steps for Jenkins.
+tomcat-users.xml,C:\xampp\tomcat\conf\tomcat-users.xml,"To give Jenkins permission to ""talk"" to Tomcat."
