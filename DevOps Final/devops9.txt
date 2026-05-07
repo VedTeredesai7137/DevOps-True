@@ -448,3 +448,8 @@ ENTER
 
 ✔ Saves and exits together.
 
+OS Platform,AMI ID (Example),Default User
+Ubuntu 24.04 LTS,ami-0dee22c13ea7a9a67,ubuntu
+Amazon Linux 2023,ami-052210f666f7f2b1a,ec2-user
+Amazon Linux 2,ami-03f4878755434977f,ec2-user
+
