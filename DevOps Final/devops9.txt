@@ -1,4 +1,4 @@
-Good — now you’re aligning properly with the **actual experiment requirement (EC2 + S3 using Terraform)**. I’ll do two things:
+ Good — now you’re aligning properly with the **actual experiment requirement (EC2 + S3 using Terraform)**. I’ll do two things:
 
 1. **Fix your S3 code (it has region + structure issues)**
 2. **Rewrite COMPLETE experiment steps (EC2 + S3 + change + destroy)** — clean, correct, and exam-ready
@@ -333,4 +333,118 @@ Destroy complete! Resources: all destroyed
 * S3 bucket created with versioning and ACL
 * Infrastructure modified successfully
 * Infrastructure destroyed successfully
+
+
+
+
+
+# ✅ Nano Editing Flow (WSL Ubuntu)
+
+## 🔹 Open File
+
+```bash id="x6hn7t"
+nano main.tf
+```
+
+---
+
+## 🔹 Edit File
+
+* Use arrow keys to move
+* Type normally to add/edit code
+* Backspace to delete
+
+---
+
+## 🔹 Save File
+
+Press:
+
+```text id="ifj9gd"
+CTRL + O
+```
+
+Then press:
+
+```text id="h8d29f"
+ENTER
+```
+
+✔ File saved
+
+---
+
+## 🔹 Exit Nano
+
+Press:
+
+```text id="n8qk1i"
+CTRL + X
+```
+
+✔ Exit editor
+
+---
+
+# ✅ Full Proper Workflow
+
+```bash id="zq0s4r"
+nano main.tf
+```
+
+Edit code →
+
+```text id="2mjlwm"
+CTRL + O
+```
+
+```text id="r0z9dc"
+ENTER
+```
+
+```text id="2gkh9h"
+CTRL + X
+```
+
+Then run:
+
+```bash id="f2d8kq"
+terraform fmt
+terraform validate
+terraform apply
+```
+
+---
+
+# ✅ Quick Memory Trick
+
+| Action       | Shortcut |
+| ------------ | -------- |
+| Save         | CTRL + O |
+| Confirm save | ENTER    |
+| Exit         | CTRL + X |
+
+---
+
+# ⚠️ If You Press CTRL + X Before Saving
+
+Nano asks:
+
+```text id="evjlwm"
+Save modified buffer?
+```
+
+Press:
+
+```text id="gv1yb6"
+Y
+```
+
+Then:
+
+```text id="sqq4ku"
+ENTER
+```
+
+✔ Saves and exits together.
 
